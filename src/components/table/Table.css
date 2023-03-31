@@ -72,3 +72,33 @@ tbody > tr {
 .currentPage {
   color: white;
 }
+
+.addRow {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  font-weight: bold;
+  align-items: center;
+}
+
+.addRow input {
+  width: 200px;
+  height: 40px;
+  border: 3px solid #0096c7;
+  border-radius: 5px;
+  outline: none;
+  padding-left: 10px;
+  margin-right: 10px;
+}
+
+.addRow button {
+  background-color: #0096c7;
+  color: #cad2c5;
+  outline: none;
+  border: 3px solid #0096c7;
+  margin-right: 10px;
+  height: 40px;
+  border-radius: 5px;
+  padding: 0 20px;
+  cursor: pointer;
+}

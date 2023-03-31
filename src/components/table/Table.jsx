@@ -10,8 +10,27 @@ function Table({ data, columns, onAdd }) {
   const [sortColumn, setSortColumn] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [usersPerPage] = useState(10);
+  const [showAddRowForm, setShowAddRowForm] = useState(false);
+  const [newRowData, setNewRowData] = useState({});
 
   //Add a row
+  const toggleAddRowForm = () => {
+    setShowAddRowForm(!showAddRowForm);
+  };
+
+  const handleNewRowChange = e => {
+    setNewRowData({
+      ...newRowData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleNewRowSubmit = e => {
+    e.preventDefault();
+    onAdd(newRowData);
+    setShowAddRowForm(false);
+    setNewRowData({});
+  };
 
   const handleChange = e => {
     setSearchTerm(e.target.value);
@@ -119,6 +138,24 @@ function Table({ data, columns, onAdd }) {
         type="text"
         className="searchInput"
       />
+      <div className="addRow">
+        <button onClick={toggleAddRowForm}>Add Row</button>
+        {showAddRowForm && (
+          <form onSubmit={handleNewRowSubmit}>
+            {columns.map(column => (
+              <input
+                key={column.selector}
+                type="text"
+                name={column.selector}
+                value={newRowData[column.selector] || ''}
+                onChange={handleNewRowChange}
+                placeholder={`Enter ${column.label}`}
+              />
+            ))}
+            <button>Submit</button>
+          </form>
+        )}
+      </div>
       <table>
         <thead>
           <tr>{renderedHeaders}</tr>
