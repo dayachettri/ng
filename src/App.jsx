@@ -1,18 +1,42 @@
-import Table from './components/Table';
+import { useEffect, useState } from 'react';
+import Table from './components/table/Table';
 
 function App() {
-  const data = [
-    { name: 'Daya', city: 'Manali', age: 21, id: 1 },
-    { name: 'Ashu', city: 'Lucknow', age: 25, id: 2 },
-    { name: 'Ravi', city: 'Delhi', age: 28, id: 3 },
-    { name: 'Abhilash', city: 'Patna', age: 25, id: 4 },
-  ];
+  const [users, setUsers] = useState([]);
 
-  const config = [{ label: 'Name' }, { label: 'City' }, { label: 'Age' }];
+  // fetching and pulling out required data
+  useEffect(() => {
+    fetch('https://dummyjson.com/users')
+      .then(res => res.json())
+      .then(data => {
+        const filtered = data.users.map(user => {
+          return {
+            firstName: user.firstName,
+            id: user.id,
+            gender: user.gender,
+            age: user.age,
+            university: user.university,
+          };
+        });
+        setUsers(filtered);
+      });
+  }, []);
+
+  const handleAddRow = obj => {
+    setUsers([...users, obj]);
+  };
+
+  const columns = [
+    { label: 'Name', selector: 'firstName' },
+    { label: 'Gender', selector: 'gender' },
+    { label: 'Age', selector: 'age' },
+    { label: 'University', selector: 'university' },
+  ];
 
   return (
     <main>
-      <Table data={data} config={config} />
+      <h1>Reactable</h1>
+      <Table data={users} columns={columns} onAdd={handleAddRow} />
     </main>
   );
 }
