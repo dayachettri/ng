@@ -2,9 +2,11 @@ import { useState } from 'react';
 import { HiChevronUpDown } from 'react-icons/hi2';
 import { HiChevronUp } from 'react-icons/hi2';
 import { HiChevronDown } from 'react-icons/hi2';
+import { MdDeleteForever } from 'react-icons/md';
+import { FaUserEdit } from 'react-icons/fa';
 import './Table.css';
 
-function Table({ data, columns, onAdd }) {
+function Table({ data, columns, onAdd, onEdit, onDelete }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortOrder, setSortOrder] = useState(null);
   const [sortColumn, setSortColumn] = useState(null);
@@ -13,7 +15,17 @@ function Table({ data, columns, onAdd }) {
   const [showAddRowForm, setShowAddRowForm] = useState(false);
   const [newRowData, setNewRowData] = useState({});
 
-  //Add a row
+  //EVENT HANDLERS
+  const toggleEditRowForm = id => {
+    setShowAddRowForm(!showAddRowForm);
+    const editableRow = data.find(user => user.id === id);
+    setNewRowData(editableRow);
+  };
+
+  const deleteRow = id => {
+    onDelete(id);
+  };
+
   const toggleAddRowForm = () => {
     setShowAddRowForm(!showAddRowForm);
   };
@@ -27,15 +39,27 @@ function Table({ data, columns, onAdd }) {
 
   const handleNewRowSubmit = e => {
     e.preventDefault();
-    onAdd(newRowData);
-    setShowAddRowForm(false);
-    setNewRowData({});
+
+    if (newRowData.id) {
+      onEdit(newRowData.id, newRowData);
+      setShowAddRowForm(false);
+      setNewRowData({});
+    } else {
+      onAdd(newRowData);
+      setShowAddRowForm(false);
+      setNewRowData({});
+    }
   };
 
   const handleChange = e => {
     setSearchTerm(e.target.value);
   };
 
+  const handlePageClick = e => {
+    setCurrentPage(Number(e.target.id));
+  };
+
+  // SORT LOGIC
   const toggleSortOrder = column => {
     if (column !== sortColumn) {
       setSortColumn(column);
@@ -47,6 +71,44 @@ function Table({ data, columns, onAdd }) {
       setSortColumn(null);
     }
   };
+
+  let renderedUsers = [...data];
+  if (sortColumn !== null) {
+    renderedUsers.sort((a, b) => {
+      const aValue = a[sortColumn];
+      const bValue = b[sortColumn];
+      if (typeof aValue === 'string') {
+        return aValue.localeCompare(bValue) * (sortOrder === 'asc' ? 1 : -1);
+      } else {
+        return (aValue - bValue) * (sortOrder === 'asc' ? 1 : -1);
+      }
+    });
+  }
+
+  //Pagination Calculation
+  const indexOfLastUser = currentPage * usersPerPage;
+  const indexOfFirstUser = indexOfLastUser - usersPerPage;
+  const currentUsers = renderedUsers.slice(indexOfFirstUser, indexOfLastUser);
+
+  const totalPages = Math.ceil(renderedUsers.length / usersPerPage);
+  const pageNumbers = [];
+  for (let i = 1; i <= totalPages; i++) {
+    pageNumbers.push(i);
+  }
+
+  // RENDERED ELEMENTS
+  const renderPageNumbers = pageNumbers.map(number => {
+    return (
+      <li
+        key={number}
+        id={number}
+        onClick={handlePageClick}
+        className={currentPage === number ? 'currentPage' : ''}
+      >
+        {number}
+      </li>
+    );
+  });
 
   const renderedHeaders = columns.map(column => {
     let arrow = <HiChevronUpDown />;
@@ -69,47 +131,6 @@ function Table({ data, columns, onAdd }) {
     );
   });
 
-  let renderedUsers = [...data];
-  if (sortColumn !== null) {
-    renderedUsers.sort((a, b) => {
-      const aValue = a[sortColumn];
-      const bValue = b[sortColumn];
-      if (typeof aValue === 'string') {
-        return aValue.localeCompare(bValue) * (sortOrder === 'asc' ? 1 : -1);
-      } else {
-        return (aValue - bValue) * (sortOrder === 'asc' ? 1 : -1);
-      }
-    });
-  }
-
-  const indexOfLastUser = currentPage * usersPerPage;
-  const indexOfFirstUser = indexOfLastUser - usersPerPage;
-  const currentUsers = renderedUsers.slice(indexOfFirstUser, indexOfLastUser);
-
-  const totalPages = Math.ceil(renderedUsers.length / usersPerPage);
-  const pageNumbers = [];
-  for (let i = 1; i <= totalPages; i++) {
-    pageNumbers.push(i);
-  }
-
-  const handlePageClick = e => {
-    setCurrentPage(Number(e.target.id));
-  };
-
-  // creating pageNumbers
-  const renderPageNumbers = pageNumbers.map(number => {
-    return (
-      <li
-        key={number}
-        id={number}
-        onClick={handlePageClick}
-        className={currentPage === number ? 'currentPage' : ''}
-      >
-        {number}
-      </li>
-    );
-  });
-
   //setting renderedUsers array to current 10 users which is the limit per page and mapping them
   renderedUsers = currentUsers
     .filter(
@@ -121,7 +142,23 @@ function Table({ data, columns, onAdd }) {
     )
     .map(user => (
       <tr key={user.id}>
-        <td>{user.firstName}</td>
+        <tr
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '5px',
+          }}
+        >
+          <FaUserEdit
+            onClick={() => toggleEditRowForm(user.id)}
+            style={{ cursor: 'pointer', fontSize: '20px' }}
+          />
+          <MdDeleteForever
+            onClick={() => deleteRow(user.id)}
+            style={{ cursor: 'pointer', fontSize: '20px' }}
+          />
+          <td>{user.firstName}</td>
+        </tr>
         <td>{user.gender}</td>
         <td>{user.age}</td>
         <td>{user.university}</td>

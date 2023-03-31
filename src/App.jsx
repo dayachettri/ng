@@ -23,7 +23,25 @@ function App() {
   }, []);
 
   const handleAddRow = obj => {
-    setUsers([...users, obj]);
+    setUsers([...users, { ...obj, id: self.crypto.randomUUID() }]);
+  };
+
+  const handleEditRowById = (id, obj) => {
+    const updatedUsers = users.map(user => {
+      if (user.id === id) {
+        return obj;
+      }
+      return user;
+    });
+
+    setUsers(updatedUsers);
+  };
+
+  const handleDeleteRowById = id => {
+    const updatedUsers = users.filter(user => {
+      return user.id !== id;
+    });
+    setUsers(updatedUsers);
   };
 
   const columns = [
@@ -36,7 +54,13 @@ function App() {
   return (
     <main>
       <h1>Reactable</h1>
-      <Table data={users} columns={columns} onAdd={handleAddRow} />
+      <Table
+        data={users}
+        columns={columns}
+        onAdd={handleAddRow}
+        onEdit={handleEditRowById}
+        onDelete={handleDeleteRowById}
+      />
     </main>
   );
 }
